@@ -1,0 +1,23 @@
+---
+- name: Deploy dev environment on Raspberry Pi 3
+  hosts: raspberry_pi
+
+  tasks:
+    - name: Update apt package cache
+      become: yes
+      apt:
+        update_cache: yes
+
+    - name: Install Git
+      become: yes
+      apt:
+        name: git
+        state: present
+
+    - name: Install libssl-dev
+      become: yes
+      apt:
+        name: libssl-dev 
+        state: present 
+
+# TODO : install rust
