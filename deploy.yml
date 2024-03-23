@@ -2,7 +2,21 @@
 - name: Deploy dev environment on Raspberry Pi 3
   hosts: raspberry_pi
 
+  vars:
+    host_home_folder: "{{ lookup('env','HOME') }}"
+    target_home_folder: "{{ ansible_env.HOME }}"
+    yocto_deploy_folder: "{{ host_home_folder }}/Documents/yocto-distrib/build/tmp/deploy/deb/cortexa7t2hf-neon-vfpv4"
+    opcua_server_folder: "{{ host_home_folder }}/Documents/opcua-server"
+
   tasks:
+    - name: debug through ansible.env
+      debug:
+        msg: "{{ target_home_folder }}"
+
+    - name: debug through ansible.env
+      debug:
+        msg: "{{ yocto_deploy_folder }}"
+
     - name: Update apt package cache
       become: yes
       apt:
@@ -18,6 +32,33 @@
       become: yes
       apt:
         name: libssl-dev 
-        state: present 
+        state: absent
+
+    - name: Copy libcrypto3 .deb package to target host
+      copy:
+        src: "{{ yocto_deploy_folder }}/libcrypto3_3.0.9-r0_armhf.deb"
+        dest: /tmp/libcrypto3.deb
+
+    - name: Install libcrypto3 .deb package
+      become: yes
+      apt:
+        deb: /tmp/libcrypto3.deb
+        state: present
+
+    - name: Copy rust-server .deb package to target host
+      copy:
+        src: "{{ yocto_deploy_folder }}/rust-server_0.1.0.0+f47f6c60b9-r0_armhf.deb"
+        dest: /tmp/rust-server.deb
+
+    - name: Install rust-server .deb package
+      become: yes
+      apt:
+        deb: /tmp/rust-server.deb
+        state: present
+
+    - name: Copy server.conf to target host
+      copy:
+        src: "{{ opcua_server_folder }}/server.conf"
+        dest: "{{ target_home_folder }}/server.conf"
 
 # TODO : install rust
